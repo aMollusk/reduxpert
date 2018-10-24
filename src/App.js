@@ -1,18 +1,15 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { createStore, combineReducers } from 'redux';
+import { createStore, combineReducers, bindActionCreators } from 'redux';
 import { Provider, connect } from 'react-redux';
-
-
+import {increment} from './actions';
 
 let myState = {
   counts: {
     counter: 0
   }
 }
-
-
 
 let initialState = {
   counter: 1
@@ -26,6 +23,12 @@ function myCoolReducer(state = initialState, action) {
         counter: state.counter + 1
       }
     }
+    case 'SET_VALUE': {
+      return {
+        ...state,
+        counter: action.payload.value
+      }
+    }
     default: {
       return state;
     }
@@ -35,7 +38,6 @@ function myCoolReducer(state = initialState, action) {
 let store = createStore(combineReducers({
   counts: myCoolReducer
 }))
-
 
 // import CoolComponent from './CoolComponent';
 class App extends Component {
@@ -53,22 +55,38 @@ class App extends Component {
 export default App;
 
 
-const CoolComponent = ({name, counter, ...props}) => {
+const CoolComponent = ({name, counter, actions, ...props}) => {
   console.log(props)
   return <div>Hello {name} {counter}
-  
-    <div onClick={() => {
-      props.dispatch({
-        type: 'INCREMENT',
-
-      })
-    }}>click me</div>
+    <div onClick={() => actions.increment(4)}>click me</div>
   </div>
 }
 
-const EnhancedMyCoolComponent = connect((state) => {
+
+
+const mapStateToProps = (state) => {
   return {
     name: 'Kieran',
     ...state.counts
   }
-})(CoolComponent)
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    actions: bindActionCreators({
+      increment
+    }, dispatch)
+  }
+}
+
+// const mapDispatchToProps = (dispatch) => {
+//   return {
+//     increment: (...args) => dispatch(increment(...args))
+//   }
+// } 
+
+// const mapDispatchToProps = { increment } 
+
+const EnhancedMyCoolComponent = connect(mapStateToProps, mapDispatchToProps)(CoolComponent)
+
+
